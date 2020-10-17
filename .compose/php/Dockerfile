@@ -1,25 +1,23 @@
-FROM php:fpm-alpine
+FROM php:fpm
 
-RUN set -ex; \
-  apk add --no-cache --virtual .build-deps \
-    freetype-dev \
-    libjpeg-turbo-dev \
-    libpng-dev \
-    libzip-dev \
-    libmcrypt-dev \
-    postgresql-dev \
-    tidyhtml-dev \
-  ; \
-  \ 
-  docker-php-ext-configure pgsql \
-    -with-pgsql=/usr/include/postgresql/; \
-  \
-  docker-php-ext-install \
-    exif \
-    gd \
-    opcache \
-    pdo \
-    pdo_pgsql \
-    pgsql \
-  ; \
-  apk del .build-deps
+RUN pecl install redis-5.3.1 \
+  && docker-php-ext-enable redis
+
+RUN buildDeps="libpq-dev libzip-dev libicu-dev libpng-dev libjpeg62-turbo-dev libfreetype6-dev libmagickwand-6.q16-dev libxslt-dev" && \
+    apt-get update && \
+    apt-get install -y $buildDeps --no-install-recommends && \
+    ln -s /usr/lib/x86_64-linux-gnu/ImageMagick-6.8.9/bin-Q16/MagickWand-config /usr/bin && \
+    pecl install imagick && \
+    echo "extension=imagick.so" > /usr/local/etc/php/conf.d/ext-imagick.ini && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    docker-php-ext-install \
+        opcache \
+        pdo \
+        pdo_pgsql \
+        pgsql \
+        sockets \
+        xsl \
+        intl
+
+CMD ["php-fpm"]
