@@ -20,4 +20,5 @@ RUN buildDeps="libpq-dev libzip-dev libicu-dev libpng-dev libjpeg62-turbo-dev li
         xsl \
         intl
 
+RUN chmod -R 755 /var/www/html/storage
 CMD ["php-fpm"]
